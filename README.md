@@ -46,18 +46,49 @@ python train_model_improved.py
 python app.py
 
 
-🔮 Melhorias Futuras
+## 🔒 Segurança (uso de APIs)
 
-Dataset maior e balanceado: incluir mais e-mails reais ou públicos para aumentar acurácia.
+Atualmente a aplicação permite informar a chave da API (OpenAI ou Gemini) diretamente pela interface.
+
+👉 Recomendação para produção:
+
+Remover o campo de chave da interface.
+
+Configurar as variáveis de ambiente do sistema:
+
+OPENAI_API_KEY
+
+GEMINI_API_KEY
+
+Dessa forma, as chaves ficam protegidas e não precisam ser informadas manualmente.
+
+
+## 🔮 Melhorias Futuras
 
 Fine-tuning com modelos de linguagem (transformers) para melhor compreensão semântica.
 
-Multi-classe: permitir novas categorias (ex.: Financeiro, Suporte, Comercial).
-
-Feedback loop: permitir que o usuário corrija a classificação e alimente o treino contínuo.
-
-Fila assíncrona: para processar alto volume de e-mails em background.
+Dataset maior e balanceado: incluir mais e-mails reais ou públicos para aumentar acurácia.
 
 Melhorar UI/UX.
 
-Implementar modelo de feedback do usuário, conforme o modelo erra ou acerta o usuário aponta e ele já se auto corrige.
+Usar um conjunto maior e mais balanceado de e-mails reais ou públicos.
+
+Criar um pipeline para coletar e-mails já classificados (Produtivo/Improdutivo).
+
+Remover a opção de inserir chave API na interface.
+
+Usar somente variáveis de ambiente para armazenar credenciais.
+
+Multi-classe: permitir novas categorias (ex.: Financeiro, Suporte, Comercial).
+
+Fine-tuning com Transformers
+
+Analisar outros modelos como BERT, DistilBERT ou similares em relação à compreensão semântica.
+
+Feedback Loop
+
+Usuários poderiam corrigir classificações e alimentar o modelo para treino contínuo.
+
+Fila assíncrona
+
+Processamento em background para alto volume de e-mails (ex.: Celery + Redis).
