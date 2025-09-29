@@ -46,6 +46,17 @@ python train_model_improved.py
 python app.py
 
 
+## ☁️ Como Fazer o Deploy (Render)
+
+A aplicação está hospedada no Render e configurada para deploy contínuo a partir da branch `main`. As configurações utilizadas no serviço do Render são:
+
+-   **Build Command**: `pip install -r requirements.txt && python train_model_improved.py`
+-   **Start Command**: `gunicorn app:app`
+-   **Variáveis de Ambiente**: Para uso das APIs, as chaves `OPENAI_API_KEY` e `GEMINI_API_KEY` devem ser configuradas diretamente no ambiente do Render para maior segurança.
+
+**Observação Importante:** O comando de build garante que, a cada novo deploy, as dependências sejam instaladas e o modelo de machine learning seja treinado novamente, garantindo que o arquivo `email_classifier.joblib` esteja sempre presente e atualizado.
+
+
 ## 🔒 Segurança (uso de APIs)
 
 Atualmente a aplicação permite informar a chave da API (OpenAI ou Gemini) diretamente pela interface.

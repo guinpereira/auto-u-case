@@ -11,6 +11,11 @@ O processo de classificação pode ser executado em três modos:
 
 O resultado inclui o rótulo da classificação ('Produtivo' ou 'Improdutivo'),
 o nível de confiança e uma sugestão de resposta automática.
+
+🔧 Melhorias adicionadas (do código do GPT):
+- Heurísticas extras (acadêmicas, anexos, comunicação formal).
+- Ajuste do threshold (>=0.6 Produtivo, 0.5–0.6 zona incerta).
+- Respostas contextuais aprimoradas no template_reply.
 """
 
 # --- Importações de Bibliotecas Essenciais ---
@@ -112,17 +117,13 @@ def detect_order_info(text):
     return None # Retorna None se nenhum padrão for encontrado.
 
 
+# <<< INÍCIO DA MELHORIA DO GPT >>>
 def template_reply(label, text=""):
     """
     Gera uma resposta automática padronizada com base no rótulo de classificação
     e ajustada por heurística para e-mails 'Produtivos'.
 
-    Args:
-        label (str): Rótulo de classificação ('Produtivo' ou 'Improdutivo').
-        text (str): O corpo do e-mail original para análise de palavras-chave.
-
-    Returns:
-        str: A sugestão de resposta.
+    🔧 Melhorias: respostas contextuais para anexos, comunicação formal e termos acadêmicos.
     """
     text_lower = text.lower()
     order_id = detect_order_info(text)
@@ -144,8 +145,23 @@ def template_reply(label, text=""):
         if any(k in text_lower for k in ["cancelamento", "devolução", "reembolso", "assinatura"]):
             return ("Olá! Recebemos sua solicitação. "
                     "Nossa equipe está analisando e retornará em breve.")
+
+        # 🔧 Caso 4: Se houver anexos ou materiais (slides, currículo, documento).
+        if any(k in text_lower for k in ["anexo", "slides", "currículo", "documento"]):
+            return ("Prezado(a), obrigado pelo envio do material. "
+                    "Ele será muito útil e já estamos organizando para utilização.")
+
+        # 🔧 Caso 5: Se for comunicação acadêmica/profissional.
+        if any(k in text_lower for k in ["professor", "aluno", "disciplina", "tarefa", "projeto", "atividade"]):
+            return ("Prezado(a) Professor(a), agradecemos a mensagem e o envio. "
+                    "Estamos acompanhando com atenção.")
+
+        # 🔧 Caso 6: Comunicação formal (prezado/atenciosamente).
+        if any(k in text_lower for k in ["prezado", "atenciosamente"]):
+            return ("Agradecemos o contato e confirmamos o recebimento da sua mensagem. "
+                    "Nossa equipe está à disposição.")
         
-        # Caso 4: Resposta Produtiva genérica (se nenhuma heurística específica se aplicar).
+        # Caso genérico se nada se aplicar.
         return ("Olá! Recebemos sua solicitação e vamos analisar. "
                 "Por favor, confirme o número do seu pedido ou envie mais detalhes.")
     
@@ -154,11 +170,12 @@ def template_reply(label, text=""):
         return ("Olá! Agradecemos a sua mensagem. "
                 "Entraremos em contato se for necessária alguma ação. "
                 "Tenha um ótimo dia!")
-
+# <<< FIM DA MELHORIA DO GPT >>>
 
 
 # --- Funções de Classificação com Modelos de IA ---
 
+# --- FUNÇÃO ORIGINAL MANTIDA ---
 def classify_with_gemini(text, api_key):
     """
     Classifica o e-mail e gera resposta usando a API do Gemini.
@@ -216,7 +233,7 @@ def classify_with_gemini(text, api_key):
         # Retorna erro amigável em caso de falha na API.
         return "Erro", 0.0, f"Ocorreu um erro ao comunicar com a API do Gemini: {e}"
 
-
+# --- FUNÇÃO ORIGINAL MANTIDA ---
 def classify_with_openai(text, api_key):
     """
     Classifica o e-mail e gera resposta usando a API da OpenAI (GPT).
@@ -263,16 +280,16 @@ def classify_with_openai(text, api_key):
         return "Erro", 0.0, f"Ocorreu um erro ao comunicar com a API da OpenAI: {e}"
 
 
+# <<< INÍCIO DA MELHORIA DO GPT >>>
 def classify_local(text):
     """
     Usa o modelo de Machine Learning local para classificação,
     aplicando heurísticas e thresholds de confiança.
 
-    Args:
-        text (str): O corpo do e-mail.
-
-    Returns:
-        tuple: (label, confidence, reply) ou ("Erro", 0.0, mensagem de erro).
+    🔧 Melhorias: 
+    - Threshold ajustado para >=0.6 (Produtivo).
+    - Zona de incerteza entre 0.5–0.6 com aviso.
+    - Reforço para termos acadêmicos e anexos.
     """
     if model is None:
         # Verifica se o modelo foi carregado com sucesso na inicialização.
@@ -284,21 +301,25 @@ def classify_local(text):
         proba_prod = float(model.predict_proba([text])[0][1])
 
         # Heurística de Reforço: Se detectar um número de pedido/nota, 
-        # a confiança na classe 'Produtivo' é elevada, se já for alta.
+        # a confiança na classe 'Produtivo' é elevada.
         if detect_order_info(text):
             # Aumenta a probabilidade para, no mínimo, 85%.
             proba_prod = max(proba_prod, 0.85)
 
+        # 🔧 Heurística adicional: anexos, slides, termos acadêmicos.
+        if any(k in text.lower() for k in ["anexo", "slides", "professor", "disciplina", "currículo", "documento"]):
+            proba_prod = max(proba_prod, 0.8)
+
         # Aplica os Thresholds (Limiares) de Decisão.
-        if proba_prod >= 0.65:
+        if proba_prod >= 0.6:
             # Alta confiança em Produtivo.
             label = "Produtivo"
             confidence = proba_prod
         elif proba_prod >= 0.5:
-            # Zona de Incerteza (entre 50% e 65%): assume Improdutivo por precaução, mas avisa.
+            # Zona de Incerteza (entre 50% e 60%): assume Improdutivo por precaução, mas avisa.
             label = "Improdutivo"
             confidence = proba_prod
-            print("Aviso: classificação incerta, revisão humana sugerida.")
+            print("Aviso: classificação incerta (zona 0.5–0.6), revisão humana sugerida.")
         else:
             # Baixa confiança em Produtivo (assume Improdutivo).
             label = "Improdutivo"
@@ -311,7 +332,7 @@ def classify_local(text):
     except Exception as e:
         print(f"Erro no modelo local: {e}")
         return "Erro", 0.0, "Ocorreu um erro ao usar o modelo local."
-
+# <<< FIM DA MELHORIA DO GPT >>>
 
 
 # --- Rotas da Aplicação Flask ---
