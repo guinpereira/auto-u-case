@@ -1,0 +1,299 @@
+text,label
+"Boa tarde, preciso atualizar meu cadastro. Meu CPF é 000.000.000-00. Por favor, me orientem.",Produtivo
+"Encaminho nota fiscal em anexo. Confirmem o recebimento, por favor.",Produtivo
+"Existe previsão de entrega do pedido #12345? Preciso confirmar a data.",Produtivo
+"Solicito cancelamento de assinatura e estorno conforme contrato.",Produtivo
+"Tenho dúvida sobre a fatura cobrada em duplicidade. Podem verificar?",Produtivo
+"Olá, gostaria de saber o status do pedido 12345.",Produtivo
+"Meu sistema está com erro ao tentar fazer login, podem ajudar?",Produtivo
+"Favor reenviar a fatura do mês de março.",Produtivo
+"Preciso alterar o endereço de entrega do meu pedido.",Produtivo
+"Anexei o contrato assinado conforme solicitado.",Produtivo
+"Boa tarde, poderiam confirmar se receberam meus documentos?",Produtivo
+"Segue em anexo o comprovante de pagamento.",Produtivo
+"Estou com dificuldades para acessar minha conta bancária.",Produtivo
+"Qual o prazo de resposta para a solicitação enviada ontem?",Produtivo
+"Preciso de informações sobre o andamento do protocolo 88991.",Produtivo
+"Por favor, atualizem o status do meu chamado técnico.",Produtivo
+"Envio este e-mail para solicitar segunda via do boleto.",Produtivo
+"Gostaria de agendar uma reunião para tratar do contrato.",Produtivo
+"Minha senha expirou, como posso redefini-la?",Produtivo
+"Existe alguma atualização sobre o processo aberto semana passada?",Produtivo
+"Preciso de ajuda urgente, meu acesso está bloqueado.",Produtivo
+"Vocês podem confirmar a entrega do pedido nº 56565?",Produtivo
+"Estou enviando relatórios mensais em anexo para validação.",Produtivo
+"Poderiam me enviar o manual atualizado do sistema?",Produtivo
+"Quero cancelar minha assinatura, como proceder?",Produtivo
+"Olá pessoal, tudo bem? Gostaria de agendar nossa reunião trimestral para a próxima semana. Quais dias ficam melhores para vocês?",Produtivo
+"Segue o relatório de vendas do Q3 para análise. Por favor, me enviem seus feedbacks até sexta-feira.",Produtivo
+"Estou com um problema na API de pagamentos, o endpoint de estorno está retornando erro 500. Podem investigar com urgência?",Produtivo
+"Prezados, o cliente XPTO reportou uma inconsistência no relatório gerado pelo sistema. Anexei o print do erro. Precisamos corrigir isso.",Produtivo
+"Boa tarde, poderiam me dar acesso à pasta compartilhada do projeto 'Phoenix'? Fui adicionado ao time hoje.",Produtivo
+"Lembrete: a entrega da primeira fase do projeto é amanhã, 28/09. Verifiquem suas pendências.",Produtivo
+"FWD: Convite Reunião de Alinhamento. Pessoal, encaminhando o convite. Participação obrigatória.",Produtivo
+"A impressora do terceiro andar não está funcionando. Alguém do TI pode verificar?",Produtivo
+"Olá, notei que meu pagamento de horas extras não foi incluído no último holerite. Poderiam verificar o que houve?",Produtivo
+"Conforme nossa conversa, estou enviando a proposta comercial atualizada em anexo. Aguardo o retorno.",Produtivo
+"Aprovado. Podem seguir com a implementação.",Produtivo
+"Preciso que a documentação da nova feature seja criada até o final da sprint.",Produtivo
+"O servidor de testes está offline desde as 10h. Alguma previsão de retorno?",Produtivo
+"Por favor, revisar o pull request #582 no repositório principal.",Produtivo
+"Onde encontro o template para solicitação de férias?",Produtivo
+"Estou tentando gerar um novo token de acesso, mas o sistema diz que meu usuário é inválido.",Produtivo
+"Recebemos a notificação de que o certificado de segurança do site irá expirar em 10 dias. Precisamos iniciar o processo de renovação.",Produtivo
+"Gostaria de solicitar um aumento no limite do meu cartão de crédito corporativo.",Produtivo
+"O link para a reunião de hoje parece estar quebrado. Podem me enviar um novo?",Produtivo
+"Segue a pauta para nossa conversa de amanhã. Por favor, adicionem outros tópicos se necessário.",Produtivo
+"Sua encomenda está a caminho! Previsão de entrega: 3 dias úteis.",Produtivo
+"Preciso de informações sobre a última atualização do sistema.",Produtivo
+"Alguém pode revisar o orçamento antes do envio ao cliente?",Produtivo
+"Fiz um teste na plataforma e encontrei um bug na página de login.",Produtivo
+"Podem confirmar se todos os arquivos do projeto foram enviados?",Produtivo
+"Solicito suporte para reinstalação do software.",Produtivo
+"Favor atualizar a lista de contatos da equipe.",Produtivo
+"Existe algum treinamento disponível sobre a nova funcionalidade?",Produtivo
+"Podem me enviar a ata da reunião anterior?",Produtivo
+"Preciso de acesso ao relatório de vendas do mês passado.",Produtivo
+"Alguém pode me ajudar a configurar o servidor de teste?",Produtivo
+"Solicito atualização sobre o ticket aberto ontem.",Produtivo
+"Podem reenviar o link de acesso ao sistema?",Produtivo
+"Há previsão de manutenção na rede amanhã?",Produtivo
+"Preciso que revisem o contrato antes do envio ao cliente.",Produtivo
+"Favor me enviar os arquivos de referência para o projeto.",Produtivo
+"Confirmação de participação na reunião marcada para amanhã.",Produtivo
+"Verifiquem se os backups do servidor foram realizados.",Produtivo
+"Alguém pode validar o resultado da análise de dados?",Produtivo
+"Preciso de informações sobre o status do projeto Alpha.",Produtivo
+"Solicito detalhes sobre o atendimento ao cliente registrado.",Produtivo
+"Favor revisar os dados inseridos na planilha compartilhada.",Produtivo
+"Confirme se a atualização do sistema foi concluída.",Produtivo
+"Preciso do parecer sobre a solicitação de reembolso.",Produtivo
+"Alguém pode verificar o e-mail enviado pelo cliente?",Produtivo
+"Envio o relatório financeiro mensal para conferência.",Produtivo
+"Favor atualizar o cronograma da equipe.",Produtivo
+"Solicito validação das alterações realizadas no sistema.",Produtivo
+"Preciso do histórico de atendimento do cliente X.",Produtivo
+"Confirme se os documentos foram assinados digitalmente.",Produtivo
+"Envio a apresentação final para revisão.",Produtivo
+"Alguém pode aprovar a proposta comercial enviada?",Produtivo
+"Solicito informações sobre o andamento do ticket 204.",Produtivo
+"Favor reenviar os arquivos do projeto para todos os envolvidos.",Produtivo
+"Preciso agendar treinamento para a equipe de vendas.",Produtivo
+"Confirme se a instalação do software foi concluída com sucesso.",Produtivo
+"Envio a planilha de controle de estoque atualizada.",Produtivo
+"Favor validar os dados importados para o sistema.",Produtivo
+"Solicito suporte para recuperação de senha do usuário.",Produtivo
+"Alguém pode revisar o manual do sistema antes da publicação?",Produtivo
+"Preciso confirmar a entrega do pedido realizado ontem.",Produtivo
+"Solicito informações sobre a solicitação de suporte técnico.",Produtivo
+"Envio a minuta do contrato para conferência jurídica.",Produtivo
+"Alguém pode atualizar o status do chamado técnico?",Produtivo
+"Favor confirmar o recebimento do relatório enviado.",Produtivo
+"Solicito validação do cadastro de novos usuários.",Produtivo
+"Preciso de ajuda com a configuração do servidor.",Produtivo
+"Alguém pode revisar os documentos de compliance?",Produtivo
+"Envio a agenda da reunião para validação.",Produtivo
+"Favor me enviar a confirmação da reunião.",Produtivo
+"Preciso de acesso à conta corporativa do cliente.",Produtivo
+"Solicito atualização sobre o incidente técnico reportado.",Produtivo
+"Alguém pode validar o resultado da auditoria interna?",Produtivo
+"Confirme se a nova funcionalidade foi implementada corretamente.",Produtivo
+"Envio os arquivos do projeto para conferência.",Produtivo
+"Solicito informações sobre o ticket de suporte aberto.",Produtivo
+"Preciso revisar o contrato antes da assinatura.",Produtivo
+"Favor validar a planilha financeira enviada.",Produtivo
+"Alguém pode revisar o relatório de vendas trimestral?",Produtivo
+"Envio o histórico de chamados do cliente para análise.",Produtivo
+"Confirme se a atualização do software foi concluída.",Produtivo
+"Solicito informações sobre a entrega de materiais.",Produtivo
+"Preciso de ajuda para configurar o ambiente de teste.",Produtivo
+"Alguém pode validar a configuração do servidor?",Produtivo
+"Envio os dados do projeto para conferência.",Produtivo
+"Solicito informações sobre a solicitação de suporte realizada ontem.",Produtivo
+"Preciso revisar a minuta do contrato enviado.",Produtivo
+"Favor validar os relatórios financeiros do mês.",Produtivo
+"Alguém pode revisar a atualização do sistema?",Produtivo
+"Envio a agenda final da reunião para aprovação.",Produtivo
+"Solicito validação da configuração do novo servidor.",Produtivo
+"Preciso confirmar os dados do cliente antes do envio.",Produtivo
+"Favor revisar o histórico de tickets para inconsistências.",Produtivo
+"Alguém pode aprovar a minuta do contrato enviado?",Produtivo
+"Envio a planilha de resultados para validação.",Produtivo
+"Solicito informações sobre o andamento do projeto Beta.",Produtivo
+"Preciso revisar os arquivos anexados para conferência.",Produtivo
+"Favor validar os dados do sistema importados recentemente.",Produtivo
+"Alguém pode revisar os registros do atendimento ao cliente?",Produtivo
+"Envio a ata da reunião para conferência final.",Produtivo
+"Solicito validação do formulário de cadastro enviado.",Produtivo
+"Preciso de ajuda com o acesso ao banco de dados.",Produtivo
+"Alguém pode validar a planilha de estoque atualizada?",Produtivo
+"Envio os arquivos de projeto para conferência técnica.",Produtivo
+"Solicito informações sobre a solicitação pendente do cliente.",Produtivo
+"Preciso confirmar os dados da entrega do pedido.",Produtivo
+"Favor revisar os arquivos do contrato antes da assinatura.",Produtivo
+"Alguém pode validar a configuração do servidor de teste?",Produtivo
+"Envio a minuta do contrato para validação jurídica.",Produtivo
+"Solicito atualização sobre o status do chamado técnico.",Produtivo
+"Parabéns time! Feliz Natal e próspero ano novo para todos.",Improdutivo
+"Obrigado pelo atendimento, muito satisfeito com o suporte.",Improdutivo
+"Só passando para desejar um ótimo dia a todos!",Improdutivo
+"Obrigada! Abraços",Improdutivo
+"Bom trabalho equipe!",Improdutivo
+"Feliz Natal e um próspero Ano Novo para toda a equipe!",Improdutivo
+"Muito obrigado pela atenção de sempre.",Improdutivo
+"Parabéns pelo excelente serviço prestado.",Improdutivo
+"Bom dia, desejo uma ótima semana para todos.",Improdutivo
+"Foi um prazer participar do evento de vocês.",Improdutivo
+"Obrigado pelo retorno rápido!",Improdutivo
+"Sucesso no lançamento do novo produto.",Improdutivo
+"Agradeço pela colaboração no projeto.",Improdutivo
+"Parabéns pelo aniversário da empresa!",Improdutivo
+"Gostaria de agradecer pela visita à nossa sede.",Improdutivo
+"Fico feliz em saber que resolveram meu problema.",Improdutivo
+"Boa tarde, espero que estejam bem.",Improdutivo
+"Obrigado pela parceria de sempre.",Improdutivo
+"Foi ótimo conversar com vocês na semana passada.",Improdutivo
+"Parabéns a toda a equipe pelo excelente trabalho.",Improdutivo
+"Obrigado, tudo certo agora.",Improdutivo
+"Feliz aniversário para o time!",Improdutivo
+"Agradeço pela pronta resposta.",Improdutivo
+"Bom dia, só passando para desejar sucesso.",Improdutivo
+"Obrigado por me manterem informado.",Improdutivo
+"Envio votos de boas festas.",Improdutivo
+"Foi ótimo o encontro de ontem, obrigado.",Improdutivo
+"Bom trabalho a todos!",Improdutivo
+"Obrigado por resolverem rapidamente.",Improdutivo
+"Feliz Páscoa a toda a equipe.",Improdutivo
+"Parabéns pelo excelente atendimento.",Improdutivo
+"Obrigado pela paciência.",Improdutivo
+"Boa tarde, desejo ótimos negócios.",Improdutivo
+"Parabéns pelo resultado alcançado.",Improdutivo
+"Lembrete: a pesquisa de satisfação termina hoje.",Improdutivo
+"Obrigado por se inscrever na nossa newsletter! Fique por dentro das novidades.",Improdutivo
+"Recebido, obrigado!",Improdutivo
+"Parabéns, você ganhou um cupom de 20% de desconto! Use o código PROMO20.",Improdutivo
+"Confirmação de leitura: seu e-mail foi lido.",Improdutivo
+"Lembrete de Aniversário: Hoje é aniversário de Fulano de Tal.",Improdutivo
+"[AVISO DE FÉRIAS] Estarei fora do escritório de 28/09 a 15/10.",Improdutivo
+"Sua fatura do serviço de streaming foi paga com sucesso.",Improdutivo
+"Ok, combinado.",Improdutivo
+"Visto.",Improdutivo
+"Você tem uma nova sugestão de amizade no LinkedIn.",Improdutivo
+"Black Friday chegando! Ofertas imperdíveis com até 70% de desconto esperam por você.",Improdutivo
+"Obrigado pela sua mensagem. Esta é uma resposta automática para confirmar recebimento.",Improdutivo
+"Apenas para confirmar que estou ciente. Obrigado.",Improdutivo
+"O RH informa: amanhã teremos café da manhã de boas-vindas para novos estagiários.",Improdutivo
+"Sua encomenda está a caminho! Previsão de entrega: 3 dias úteis.",Improdutivo
+"Entendido.",Improdutivo
+"Você foi mencionado em um comentário no Trello.",Improdutivo
+"A pesquisa de satisfação foi enviada. Agradecemos sua participação.",Improdutivo
+"Sem problemas, fico no aguardo.",Improdutivo
+"Feliz Ano Novo a toda equipe!",Improdutivo
+"Obrigado pelo feedback positivo!",Improdutivo
+"Bom dia! Lembrete sobre a reunião de equipe.",Improdutivo
+"Parabéns pela conclusão do projeto!",Improdutivo
+"Envio informações sobre promoções especiais.",Improdutivo
+"Obrigado por confirmar sua presença.",Improdutivo
+"Boa tarde! Mensagem automática de atualização do sistema.",Improdutivo
+"Fique atento às nossas ofertas semanais.",Improdutivo
+"Parabéns pelo desempenho no trimestre!",Improdutivo
+"Obrigado pela atenção!",Improdutivo
+"Mensagem automática: senha alterada com sucesso.",Improdutivo
+"Olá! Não se esqueça da nossa reunião amanhã.",Improdutivo
+"Feliz aniversário para você!",Improdutivo
+"Obrigado por participar do nosso evento.",Improdutivo
+"Olá! Lembrete de pagamento da assinatura mensal.",Improdutivo
+"Parabéns pelo novo projeto concluído com sucesso.",Improdutivo
+"Obrigado por enviar a documentação.",Improdutivo
+"Bom dia! Apenas para avisar que recebi seu e-mail.",Improdutivo
+"Mensagem automática: atualização concluída.",Improdutivo
+"Parabéns pela entrega da primeira fase do projeto!",Improdutivo
+"Obrigado por confirmar seu agendamento.",Improdutivo
+"Feliz Natal e boas festas a todos!",Improdutivo
+"Bom trabalho a todos os colegas!",Improdutivo
+"Mensagem automática: sua inscrição foi recebida.",Improdutivo
+"Parabéns pelo resultado da última campanha.",Improdutivo
+"Obrigado por enviar o formulário preenchido.",Improdutivo
+"Olá! Mensagem automática de boas-vindas.",Improdutivo
+"Fique atento às novidades do sistema.",Improdutivo
+"Obrigado por validar os dados!",Improdutivo
+"Parabéns pela conclusão do curso online.",Improdutivo
+"Mensagem automática: sua senha será atualizada em breve.",Improdutivo
+"Obrigado por enviar a avaliação de satisfação.",Improdutivo
+"Feliz aniversário para você e sua equipe!",Improdutivo
+"Mensagem automática: confirmando recebimento do documento.",Improdutivo
+"Obrigado por compartilhar os arquivos.",Improdutivo
+"Parabéns pelo sucesso no evento realizado.",Improdutivo
+"Olá! Apenas lembrando sobre a atualização do software.",Improdutivo
+"Mensagem automática: seu cadastro foi aprovado.",Improdutivo
+"Obrigado por participar do nosso treinamento online.",Improdutivo
+"Parabéns pelo excelente resultado da equipe!",Improdutivo
+"Mensagem automática: seu pedido foi recebido.",Improdutivo
+"Obrigado por manter os dados atualizados.",Improdutivo
+"Feliz Páscoa a todos!",Improdutivo
+"Mensagem automática: confirmação de entrega.",Improdutivo
+"Obrigado por responder ao nosso questionário.",Improdutivo
+"Parabéns pelo desempenho do time neste trimestre.",Improdutivo
+"Olá! Mensagem automática: atualização concluída com sucesso.",Improdutivo
+"Obrigado por validar as informações enviadas.",Improdutivo
+"Mensagem automática: agendamento confirmado.",Improdutivo
+"Parabéns pelo aniversário da empresa!",Improdutivo
+"Obrigado por participar do webinar.",Improdutivo
+"Mensagem automática: sua conta foi criada com sucesso.",Improdutivo
+"Feliz Dia do Trabalho a todos!",Improdutivo
+"Obrigado por compartilhar sua experiência.",Improdutivo
+"Parabéns pelo lançamento do novo produto!",Improdutivo
+"Mensagem automática: lembrete de pagamento enviado.",Improdutivo
+"Obrigado por acompanhar nossas novidades.",Improdutivo
+"Feliz Ano Novo a toda equipe!",Improdutivo
+"Mensagem automática: atualização da política de privacidade.",Improdutivo
+"Obrigado por confirmar seu cadastro.",Improdutivo
+"Parabéns pelo sucesso da última campanha de marketing.",Improdutivo
+"Mensagem automática: seu registro foi aprovado.",Improdutivo
+"Obrigado por validar o formulário de inscrição.",Improdutivo
+"Feliz Natal e boas festas!",Improdutivo
+"Mensagem automática: relatório enviado.",Improdutivo
+"Obrigado por participar da pesquisa de satisfação.",Improdutivo
+"Parabéns pelo resultado do projeto!",Improdutivo
+"Mensagem automática: lembrete de evento.",Improdutivo
+"Obrigado por enviar os documentos necessários.",Improdutivo
+"Feliz aniversário da empresa!",Improdutivo
+"Mensagem automática: aviso de atualização do sistema.",Improdutivo
+"Obrigado por sua colaboração!",Improdutivo
+"Parabéns pelo desempenho da equipe!",Improdutivo
+"Mensagem automática: agendamento realizado.",Improdutivo
+"Obrigado por confirmar presença no evento.",Improdutivo
+"Feliz Páscoa e boas festas!",Improdutivo
+"Mensagem automática: tarefa concluída.",Improdutivo
+"Obrigado por participar do webinar sobre marketing digital.",Improdutivo
+"Parabéns pelo sucesso da campanha!",Improdutivo
+"Mensagem automática: lembrete de assinatura.",Improdutivo
+"Obrigado por enviar o relatório mensal.",Improdutivo
+"Feliz Ano Novo e bons negócios!",Improdutivo
+"Mensagem automática: aviso de manutenção do sistema.",Improdutivo
+"Obrigado por validar o cadastro de novos usuários.",Improdutivo
+"Parabéns pela conclusão do treinamento online.",Improdutivo
+"Mensagem automática: confirmação de agendamento enviada.",Improdutivo
+"Obrigado por enviar feedback sobre o atendimento.",Improdutivo
+"Feliz aniversário e felicidades!",Improdutivo
+"Mensagem automática: atualização de contrato concluída.",Improdutivo
+"Obrigado por participar da reunião online.",Improdutivo
+"Parabéns pelo lançamento do novo módulo do sistema.",Improdutivo
+"Mensagem automática: lembrete de pagamento enviado.",Improdutivo
+"Obrigado por enviar os dados solicitados.",Improdutivo
+"Feliz Natal e boas festas a todos!",Improdutivo
+"Mensagem automática: confirmação de leitura do e-mail.",Improdutivo
+"Obrigado por validar a planilha enviada.",Improdutivo
+"Parabéns pelo desempenho individual e da equipe.",Improdutivo
+"Mensagem automática: senha redefinida com sucesso.",Improdutivo
+"Obrigado por participar do treinamento corporativo.",Improdutivo
+"Feliz Ano Novo! Que seja um ótimo ano para todos!",Improdutivo
+"Mensagem automática: confirmação de inscrição realizada.",Improdutivo
+"Obrigado por acompanhar as novidades da empresa.",Improdutivo
+"Parabéns pelo excelente resultado alcançado!",Improdutivo
+"Mensagem automática: lembrete de atualização do sistema.",Improdutivo
+"Obrigado por validar os documentos enviados.",Improdutivo
+"Feliz Páscoa e boas festas a todos!",Improdutivo
+"Mensagem automática: seu pedido foi processado com sucesso.",Improdutivo
+"Obrigado por enviar o formulário preenchido corretamente.",Improdutivo
+"Parabéns pelo sucesso da última entrega!",Improdutivo
