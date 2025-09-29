@@ -16,6 +16,11 @@ o nível de confiança e uma sugestão de resposta automática.
 - Heurísticas extras (acadêmicas, anexos, comunicação formal).
 - Ajuste do threshold (>=0.6 Produtivo, 0.5–0.6 zona incerta).
 - Respostas contextuais aprimoradas no template_reply.
+
+✅ Melhorias de UX (Experiência do Usuário) implementadas:
+- Bug 1: A seleção do modelo de IA agora persiste entre as análises.
+- Bug 2: O envio de um arquivo agora tem prioridade sobre o texto digitado na caixa.
+- Bug 3: A lógica de backend agora suporta o preview do arquivo no frontend.
 """
 
 # --- Importações de Bibliotecas Essenciais ---
@@ -53,18 +58,25 @@ MODEL_PATH = "models/email_classifier.joblib"
 # Variável para armazenar o modelo carregado.
 model = None
 
+# Bloco de inicialização: tenta carregar o modelo de ML na memória quando a aplicação inicia.
+# Isso evita a necessidade de recarregar o modelo a cada requisição, melhorando a performance.
+print("--- INICIALIZANDO APLICAÇÃO ---")
 # Verifica se o arquivo do modelo existe no caminho especificado.
 if os.path.exists(MODEL_PATH):
     try:
         # Carrega o modelo de ML usando joblib.
         model = joblib.load(MODEL_PATH)
-        print(f"Modelo local carregado com sucesso de '{MODEL_PATH}'")
+        print(f"✅ Modelo local carregado com sucesso de '{MODEL_PATH}'")
     except Exception as e:
-        print(f"Erro ao carregar o modelo local: {e}")
+        # Se ocorrer um erro durante o carregamento (ex: arquivo corrompido),
+        # o erro é logado e a variável 'model' permanece como None.
+        print(f"❌ Erro ao carregar o modelo local: {e}")
         model = None
 else:
-    # Aviso caso o modelo não seja encontrado.
-    print(f"Aviso: Modelo local não foi encontrado em '{MODEL_PATH}'. O modo local não funcionará.")
+    # Aviso caso o modelo não seja encontrado no deploy. Isso pode acontecer se
+    # o script de treinamento não foi executado com sucesso durante o build.
+    print(f"⚠️  Aviso: Modelo local não foi encontrado em '{MODEL_PATH}'. O modo 'local' não funcionará.")
+print("--- APLICAÇÃO PRONTA ---")
 
 
 # --- Funções Auxiliares de Processamento e Heurística ---
@@ -74,25 +86,26 @@ def extract_text_from_pdf(file_stream):
     Extrai o texto contido em um objeto de arquivo PDF (stream de bytes).
 
     Args:
-        file_stream (io.BytesIO): Stream de bytes do arquivo PDF.
+        file_stream (io.BytesIO): Stream de bytes do arquivo PDF, vindo do request do Flask.
 
     Returns:
-        str: Todo o texto extraído do PDF, ou uma string vazia em caso de erro.
+        str: Todo o texto extraído do PDF, concatenado, ou uma string vazia em caso de erro.
     """
     try:
-        # Cria um objeto leitor de PDF a partir do stream.
+        # Cria um objeto leitor de PDF a partir do stream de bytes em memória.
         reader = PyPDF2.PdfReader(file_stream)
-        # Itera sobre todas as páginas e extrai o texto, juntando-o em uma única string.
+        # Usa uma list comprehension para iterar sobre todas as páginas,
+        # extrair o texto de cada uma e juntar tudo em uma única string com quebras de linha.
         text_pages = [page.extract_text() for page in reader.pages if page.extract_text()]
         return "\n".join(text_pages)
     except Exception as e:
-        # Loga o erro de extração e retorna uma string vazia.
+        # Loga o erro de extração no console do servidor para debug.
         print(f"Erro ao extrair texto do PDF: {e}")
         return ""
     
 def detect_order_info(text):
     """
-    Detecta números de pedido, nota fiscal ou identificadores longos no texto.
+    Detecta números de pedido, nota fiscal ou identificadores longos no texto usando expressões regulares.
     
     A presença de tais números é uma forte heurística para um e-mail 'Produtivo' (que requer ação).
 
@@ -104,12 +117,16 @@ def detect_order_info(text):
     """
     text_low = text.lower()
     
-    # Padrão 1: Busca por 'pedido' seguido opcionalmente por : ou - e, em seguida, pelo menos 4 dígitos.
+    # Padrão 1: Busca por 'pedido' seguido opcionalmente por ':', espaço ou '-' e, em seguida, pelo menos 4 dígitos.
+    # Ex: "pedido 1234", "pedido:5678", "pedido-9101"
     m = re.search(r'pedido[:\s-]*([0-9]{4,})', text_low)
     if m:
-        return m.group(1) # Retorna o grupo de captura (os dígitos do pedido).
+        return m.group(1) # Retorna o grupo de captura (apenas os dígitos do pedido).
         
-    # Padrão 2: Busca por uma sequência isolada de 6 ou mais dígitos (pode ser um ID de rastreio ou pedido).
+    # Padrão 2: Busca por uma sequência isolada de 6 ou mais dígitos.
+    # O `\b` significa "word boundary" (fronteira de palavra), garantindo que não pegamos
+    # parte de um número maior, como um CEP ou telefone.
+    # Ex: "ID 123456", "rastreio 987654321"
     m2 = re.search(r'\b([0-9]{6,})\b', text_low)
     if m2:
         return m2.group(1)
@@ -360,6 +377,7 @@ def process():
     Rota de processamento (POST). 
     Recebe os dados do formulário (texto, modo, chave de API, arquivo)
     e executa a classificação de acordo com o modo escolhido.
+    Esta função foi atualizada para corrigir bugs de UX.
     """
     try:
         # 1. Coleta e Sanitiza os Dados do Formulário
@@ -368,26 +386,45 @@ def process():
         api_key = request.form.get("api_key", "").strip()
         file = request.files.get("file")
 
-        # Inicializa o texto a ser analisado.
-        text = text_input
+        # Inicializa a variável de texto principal como None.
+        # Isso é parte da nova lógica de prioridade de entrada.
+        text = None
         
-        # 2. Processamento de Arquivos
-        if not text and file and file.filename:
+        # ### INÍCIO DA CORREÇÃO BUG 2: PRIORIDADE DO ARQUIVO ###
+        # A lógica agora prioriza o conteúdo de um arquivo enviado sobre o texto digitado.
+        # Isso evita que o usuário tenha que apagar o texto da caixa para analisar um arquivo.
+        
+        # Primeiro, verifica se um objeto 'file' foi enviado e se ele tem um nome de arquivo.
+        if file and file.filename:
             filename = file.filename.lower()
             
-            # Se for PDF, extrai o texto usando a função auxiliar.
+            print(f"Arquivo '{filename}' recebido, processando...")
+            
+            # Se for um arquivo PDF, chama a função de extração de texto de PDF.
             if filename.endswith(".pdf"):
-                # io.BytesIO(file.read()) cria um stream em memória para PyPDF2 ler o arquivo.
+                # Passa o arquivo como um stream de bytes em memória.
                 text = extract_text_from_pdf(io.BytesIO(file.read()))
             
-            # Se for TXT, lê o conteúdo como texto simples.
+            # Se for um arquivo de texto, lê seu conteúdo.
             elif filename.endswith(".txt"):
-                # Decodifica o conteúdo do arquivo com tratamento de erro.
+                # Decodifica o conteúdo do arquivo como UTF-8, ignorando erros de codificação.
                 text = file.read().decode("utf-8", errors="ignore")
 
-        # 3. Validação do Texto
+        # Se, após a verificação do arquivo, a variável 'text' ainda estiver vazia ou None,
+        # então usamos o conteúdo da caixa de texto como a fonte de dados.
         if not text:
-            return render_template("index.html", error="Nenhum texto ou arquivo válido foi enviado.")
+            text = text_input
+        # ### FIM DA CORREÇÃO BUG 2 ###
+
+        # 3. Validação do Texto Final
+        # Verifica se, após todas as lógicas, existe algum texto para analisar.
+        if not text:
+            # ### INÍCIO DA CORREÇÃO BUG 1: PERSISTÊNCIA DA SELEÇÃO DO MODELO ###
+            # Ao renderizar a página com um erro, agora passamos a variável 'selected_mode'.
+            # Isso dirá ao template Jinja2 para manter a opção do dropdown que o usuário escolheu,
+            # melhorando a experiência do usuário.
+            return render_template("index.html", error="Nenhum texto ou arquivo válido foi enviado.", selected_mode=mode)
+            # ### FIM DA CORREÇÃO BUG 1 ###
 
         # 4. Execução da Classificação Baseada no Modo
         label, confidence, reply = "", 0.0, ""
@@ -399,32 +436,37 @@ def process():
             # Usa a chave da interface ou busca na variável de ambiente.
             key_to_use = api_key or os.getenv("GEMINI_API_KEY")
             if not key_to_use:
-                return render_template("index.html", error="Chave de API do Gemini não fornecida na interface nem encontrada no ambiente.")
+                return render_template("index.html", error="Chave de API do Gemini não fornecida na interface nem encontrada no ambiente.", selected_mode=mode)
             label, confidence, reply = classify_with_gemini(text, key_to_use)
             
         elif mode == "openai":
             # Usa a chave da interface ou busca na variável de ambiente.
             key_to_use = api_key or os.getenv("OPENAI_API_KEY")
             if not key_to_use:
-                return render_template("index.html", error="Chave de API da OpenAI não fornecida na interface nem encontrada no ambiente.")
+                return render_template("index.html", error="Chave de API da OpenAI não fornecida na interface nem encontrada no ambiente.", selected_mode=mode)
             label, confidence, reply = classify_with_openai(text, key_to_use)
             
         else:
             # Tratamento para modo inválido (segurança).
-            return render_template("index.html", error="Modo de operação inválido selecionado.")
+            return render_template("index.html", error="Modo de operação inválido selecionado.", selected_mode=mode)
 
         # 5. Tratamento de Erros de Classificação
         if label == "Erro":
-            # Retorna o erro específico da função de classificação.
-            return render_template("index.html", error=reply, original_text=text)
+            # Retorna o erro específico da função de classificação, também persistindo o modo.
+            return render_template("index.html", error=reply, original_text=text, selected_mode=mode)
 
         # 6. Renderização de Resultados
-        # Retorna a página inicial com os resultados da classificação.
+        # ### INÍCIO DA CORREÇÃO BUG 1 (CASO DE SUCESSO) ###
+        # No retorno de sucesso, também passamos 'selected_mode=mode' para o template.
+        # Isso garante que após uma análise bem-sucedida, o dropdown permaneça
+        # na última opção utilizada pelo usuário.
         return render_template("index.html",
                                original_text=text,
                                result_label=label,
                                confidence=confidence,
-                               suggested_reply=reply)
+                               suggested_reply=reply,
+                               selected_mode=mode)
+        # ### FIM DA CORREÇÃO BUG 1 ###
 
     except Exception as e:
         # Tratamento de erro geral para qualquer falha não esperada na rota.
@@ -436,6 +478,13 @@ def process():
 # --- Execução da Aplicação ---
 if __name__ == "__main__":
     # Garante que o servidor Flask seja executado apenas quando o script for chamado diretamente.
-    # debug=True: Permite recarregamento automático e exibe o console de debug do Flask.
-    # port=5000: Define a porta de execução padrão.
+    # O comando `flask run` também pode ser usado se as variáveis de ambiente estiverem configuradas.
+    
+    # debug=True: Ativa o modo de depuração.
+    # Isso permite recarregamento automático do servidor quando o código é alterado
+    # e exibe um console de depuração interativo no navegador em caso de erro.
+    # NUNCA use debug=True em um ambiente de produção real.
+    
+    # port=5000: Define a porta de execução padrão para o servidor de desenvolvimento.
+    # O Render ignora esta configuração e usa a porta que ele designa.
     app.run(debug=True, port=5000)
