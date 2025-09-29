@@ -6,3 +6,6 @@ google-generativeai            # opcional, se usar Gemini
 openai>=0.27.0                 # opcional, se usar OpenAI
 scikit-learn                   # se for treinar/usar local
 gunicorn
+nltk>=3.9
+pandas
+numpy
