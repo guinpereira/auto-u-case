@@ -21,6 +21,7 @@ o nível de confiança e uma sugestão de resposta automática.
 - Bug 1: A seleção do modelo de IA agora persiste entre as análises.
 - Bug 2: O envio de um arquivo agora tem prioridade sobre o texto digitado na caixa.
 - Bug 3: A lógica de backend agora suporta o preview do arquivo no frontend.
+- Feature: O campo de API Key é escondido se a chave já existir no ambiente do servidor.
 """
 
 # --- Importações de Bibliotecas Essenciais ---
@@ -45,6 +46,8 @@ except ImportError:
     openai = None # Se falhar, a variável é setada para None, desabilitando o modo 'openai'.
 
 try:
+    # ### CORREÇÃO DE ERRO DE DIGITAÇÃO ###
+    # Corrigido de 'google.generai' para 'google.generativeai'
     import google.generativeai as genai
 except ImportError:
     genai = None # Se falhar, a variável é setada para None, desabilitando o modo 'gemini'.
@@ -135,7 +138,9 @@ def detect_order_info(text):
 
 
 # <<< INÍCIO DA MELHORIA DO GPT >>>
-def template_reply(label, text=""):
+# ### INCREMENTO: ASSINATURA DINÂMICA ###
+# A assinatura da função foi modificada para aceitar 'user_name'
+def template_reply(label, text="", user_name=""):
     """
     Gera uma resposta automática padronizada com base no rótulo de classificação
     e ajustada por heurística para e-mails 'Produtivos'.
@@ -144,240 +149,174 @@ def template_reply(label, text=""):
     """
     text_lower = text.lower()
     order_id = detect_order_info(text)
+    
+    # Variável para construir o corpo da resposta antes de adicionar a assinatura.
+    reply_body = ""
 
     # Lógica para e-mails que requerem ação (Produtivo)
     if label == "Produtivo":
-        # Caso 1: Se um número de pedido foi detectado.
         if order_id:
-            return (f"Olá! Obrigado pelo contato. "
-                    f"Identificamos o pedido {order_id} em sua mensagem. "
-                    "Estamos verificando e retornaremos com a nota fiscal ou atualização do status em breve.")
-        
-        # Caso 2: Se palavras-chave de nota fiscal forem encontradas.
-        if any(k in text_lower for k in ["nota fiscal", "nota-fiscal", "nf-e", "nota_fiscal"]):
-            return ("Olá! Obrigado pelo contato. "
-                    "Vamos verificar a nota fiscal solicitada e retornaremos assim que possível.")
-        
-        # Caso 3: Se palavras-chave de cancelamento/devolução forem encontradas.
-        if any(k in text_lower for k in ["cancelamento", "devolução", "reembolso", "assinatura"]):
-            return ("Olá! Recebemos sua solicitação. "
-                    "Nossa equipe está analisando e retornará em breve.")
-
-        # 🔧 Caso 4: Se houver anexos ou materiais (slides, currículo, documento).
-        if any(k in text_lower for k in ["anexo", "slides", "currículo", "documento"]):
-            return ("Prezado(a), obrigado pelo envio do material. "
-                    "Ele será muito útil e já estamos organizando para utilização.")
-
-        # 🔧 Caso 5: Se for comunicação acadêmica/profissional.
-        if any(k in text_lower for k in ["professor", "aluno", "disciplina", "tarefa", "projeto", "atividade"]):
-            return ("Prezado(a) Professor(a), agradecemos a mensagem e o envio. "
-                    "Estamos acompanhando com atenção.")
-
-        # 🔧 Caso 6: Comunicação formal (prezado/atenciosamente).
-        if any(k in text_lower for k in ["prezado", "atenciosamente"]):
-            return ("Agradecemos o contato e confirmamos o recebimento da sua mensagem. "
-                    "Nossa equipe está à disposição.")
-        
-        # Caso genérico se nada se aplicar.
-        return ("Olá! Recebemos sua solicitação e vamos analisar. "
-                "Por favor, confirme o número do seu pedido ou envie mais detalhes.")
+            reply_body = (f"Prezado(a),\n\nObrigado pelo contato. "
+                          f"Identificamos o pedido #{order_id} em sua mensagem. "
+                          "Estamos verificando e retornaremos com a nota fiscal ou atualização do status em breve.")
+        elif any(k in text_lower for k in ["nota fiscal", "nota-fiscal", "nf-e", "nota_fiscal"]):
+            reply_body = ("Prezado(a),\n\nObrigado pelo contato. "
+                          "Vamos verificar a nota fiscal solicitada e retornaremos assim que possível.")
+        elif any(k in text_lower for k in ["cancelamento", "devolução", "reembolso", "assinatura"]):
+            reply_body = ("Prezado(a),\n\nRecebemos sua solicitação. "
+                          "Nossa equipe está analisando e retornará em breve.")
+        elif any(k in text_lower for k in ["anexo", "slides", "currículo", "documento"]):
+            reply_body = ("Prezado(a),\n\nObrigado pelo envio do material. "
+                          "Ele será muito útil e já estamos organizando para utilização.")
+        elif any(k in text_lower for k in ["professor", "aluno", "disciplina", "tarefa", "projeto", "atividade"]):
+            reply_body = ("Prezado(a) Professor(a),\n\nAgradecemos a mensagem e o envio. "
+                          "Estamos acompanhando com atenção.")
+        elif any(k in text_lower for k in ["prezado", "atenciosamente"]):
+            reply_body = ("Prezado(a),\n\nAgradecemos o contato e confirmamos o recebimento da sua mensagem. "
+                          "Nossa equipe está à disposição.")
+        else:
+            reply_body = ("Prezado(a),\n\nRecebemos sua solicitação e vamos analisar. "
+                          "Por favor, confirme o número do seu pedido ou envie mais detalhes, se aplicável.")
     
     # Lógica para e-mails que não requerem ação imediata (Improdutivo)
     else:
-        return ("Olá! Agradecemos a sua mensagem. "
-                "Entraremos em contato se for necessária alguma ação. "
-                "Tenha um ótimo dia!")
+        reply_body = ("Prezado(a),\n\nAgradecemos a sua mensagem. Entraremos em contato se for necessária alguma ação.")
+
+    # ### INCREMENTO: ASSINATURA DINÂMICA ###
+    # Lógica para criar a assinatura. Se o nome for fornecido no formulário, usa-o.
+    # Caso contrário, usa um placeholder genérico que incentiva o preenchimento.
+    signature = f"Atenciosamente,\n{user_name}" if user_name else "Atenciosamente,\n[Seu Nome]"
+    
+    # Concatena o corpo da resposta com a assinatura para formar a resposta final.
+    return f"{reply_body}\n\n{signature}"
 # <<< FIM DA MELHORIA DO GPT >>>
 
 
 # --- Funções de Classificação com Modelos de IA ---
 
-# --- FUNÇÃO ORIGINAL MANTIDA ---
 def classify_with_gemini(text, api_key):
     """
     Classifica o e-mail e gera resposta usando a API do Gemini.
-    
-    O modelo é instruído a retornar um JSON estruturado para facilitar o parsing.
-
-    Args:
-        text (str): O corpo do e-mail.
-        api_key (str): Chave de API do Google Gemini.
-
-    Returns:
-        tuple: (label, confidence, reply) ou ("Erro", 0.0, mensagem de erro).
     """
     if genai is None:
         return "Erro", 0.0, "A biblioteca do Google Gemini não está instalada. Rode: pip install google-generativeai"
 
     try:
-        # Configura a chave de API para a sessão.
         genai.configure(api_key=api_key)
-
-        # Inicializa o modelo Gemini (gemini-1.5-flash) com baixa temperatura para respostas mais determinísticas.
         model_gemini = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.5-flash",
             generation_config={"temperature": 0}
         )
-
-        # Prompt de engenharia: Define o papel do assistente e a estrutura de saída JSON.
         prompt = (
             "Você é um assistente de e-mail. Classifique o e-mail a seguir em 'Produtivo' ou 'Improdutivo' "
-            "e gere uma resposta automática apropriada. Retorne SOMENTE um JSON válido com os campos: "
-            "'label' (string), 'confidence' (float entre 0.0 e 1.0), e 'reply' (string). "
+            "e gere o CORPO de uma resposta automática apropriada. Retorne SOMENTE um JSON válido com os campos: "
+            "'label' (string), 'confidence' (float entre 0.0 e 1.0), e 'reply' (string, sem assinatura). "
             f"E-mail para análise: '''{text}'''"
         )
-
-        # Faz a chamada à API.
         response = model_gemini.generate_content(prompt)
-
-        # Trata as diferentes formas de extrair o texto da resposta (por segurança).
         if hasattr(response, "text") and response.text:
             content = response.text
         elif hasattr(response, "candidates") and response.candidates:
             content = response.candidates[0].content.parts[0].text
         else:
             raise ValueError("Não foi possível extrair o texto da resposta do Gemini.")
-
-        # Limpa o texto da resposta (remove '```json' e '```' que a IA pode incluir) e converte para JSON.
         content = content.strip().lstrip("```json").rstrip("```")
         parsed = json.loads(content)
-
-        # Extrai os valores do JSON e garante que a confiança seja um float.
         return parsed.get("label"), float(parsed.get("confidence", 0)), parsed.get("reply", "")
 
     except Exception as e:
         print(f"Erro na API do Gemini: {e}")
-        # Retorna erro amigável em caso de falha na API.
         return "Erro", 0.0, f"Ocorreu um erro ao comunicar com a API do Gemini: {e}"
 
-# --- FUNÇÃO ORIGINAL MANTIDA ---
 def classify_with_openai(text, api_key):
     """
     Classifica o e-mail e gera resposta usando a API da OpenAI (GPT).
-
-    Args:
-        text (str): O corpo do e-mail.
-        api_key (str): Chave de API da OpenAI.
-
-    Returns:
-        tuple: (label, confidence, reply) ou ("Erro", 0.0, mensagem de erro).
     """
     if openai is None:
         return "Erro", 0.0, "A biblioteca da OpenAI não está instalada. Rode: pip install openai"
 
     try:
-        # Configura a chave de API.
-        # NOTA: O SDK mais recente da OpenAI pode usar `client = OpenAI(api_key=api_key)`
-        # mas esta versão ainda usa a atribuição direta.
         openai.api_key = api_key
-
-        # Prompt de engenharia: Semelhante ao Gemini, define o papel e a estrutura JSON.
         prompt = (
             "Você é um assistente de e-mail. Classifique o e-mail a seguir em 'Produtivo' ou 'Improdutivo' "
-            "e gere uma resposta automática apropriada. Retorne SOMENTE um JSON válido com os campos: "
-            "'label' (string), 'confidence' (float entre 0.0 e 1.0), e 'reply' (string). "
+            "e gere o CORPO de uma resposta automática apropriada. Retorne SOMENTE um JSON válido com os campos: "
+            "'label' (string), 'confidence' (float entre 0.0 e 1.0), e 'reply' (string, sem assinatura). "
             f"E-mail para análise: '''{text}'''"
         )
-
-        # Faz a chamada à API de Chat Completion.
         resp = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0 # Baixa temperatura para resultados mais consistentes.
+            temperature=0
         )
-
-        # Extrai o conteúdo da resposta e converte para JSON.
         content = resp['choices'][0]['message']['content']
         parsed = json.loads(content)
-        
-        # Extrai e retorna os resultados.
         return parsed.get("label"), float(parsed.get("confidence", 0)), parsed.get("reply", "")
 
     except Exception as e:
         print(f"Erro na API da OpenAI: {e}")
-        # Retorna erro amigável em caso de falha na API.
         return "Erro", 0.0, f"Ocorreu um erro ao comunicar com a API da OpenAI: {e}"
 
 
-# <<< INÍCIO DA MELHORIA DO GPT >>>
-def classify_local(text):
+def classify_local(text, user_name=""):
     """
-    Usa o modelo de Machine Learning local para classificação,
-    aplicando heurísticas e thresholds de confiança.
-
-    🔧 Melhorias: 
-    - Threshold ajustado para >=0.6 (Produtivo).
-    - Zona de incerteza entre 0.5–0.6 com aviso.
-    - Reforço para termos acadêmicos e anexos.
-    - **INCREMENTO:** A lógica de confiança agora reflete a probabilidade da classe predita.
+    Usa o modelo de Machine Learning local para classificação.
     """
     if model is None:
-        # Verifica se o modelo foi carregado com sucesso na inicialização.
         return "Erro", 0.0, "O modelo local não está carregado. Treine o modelo primeiro."
-
     try:
-        # Calcula a probabilidade de pertencer à classe 'Produtivo'.
-        # Assume que 'Produtivo' é a segunda classe (índice 1).
         proba_prod = float(model.predict_proba([text])[0][1])
-
-        # Heurística de Reforço: Se detectar um número de pedido/nota, 
-        # a confiança na classe 'Produtivo' é elevada.
         if detect_order_info(text):
-            # Aumenta a probabilidade para, no mínimo, 85%.
             proba_prod = max(proba_prod, 0.85)
-
-        # 🔧 Heurística adicional: anexos, slides, termos acadêmicos.
         if any(k in text.lower() for k in ["anexo", "slides", "professor", "disciplina", "currículo", "documento"]):
             proba_prod = max(proba_prod, 0.8)
 
-        # --- LÓGICA DE DECISÃO E CONFIANÇA CORRIGIDA ---
-        # Aplica os Thresholds (Limiares) de Decisão.
         if proba_prod >= 0.6:
-            # Alta confiança em Produtivo.
             label = "Produtivo"
-            # A confiança a ser exibida é a probabilidade da classe 'Produtivo'.
             confidence = proba_prod
-        # Se a probabilidade de ser 'Produtivo' for menor que 0.6...
         else:
-            # A classificação final é 'Improdutivo'.
             label = "Improdutivo"
-            # A confiança a ser exibida é a probabilidade da classe 'Improdutivo',
-            # que é calculada como 1 menos a probabilidade de ser 'Produtivo'.
             confidence = 1 - proba_prod
-            
-            # Condição para a Zona de Incerteza (entre 50% e 60%):
-            # A lógica de decisão já classifica como 'Improdutivo', aqui apenas adicionamos o aviso.
             if proba_prod >= 0.5:
                 print("Aviso: classificação incerta (zona 0.5–0.6), revisão humana sugerida.")
         
-        # Gera a resposta automática usando a função auxiliar com o rótulo já definido.
-        reply = template_reply(label, text)
+        reply = template_reply(label, text, user_name)
         return label, confidence, reply
         
     except Exception as e:
         print(f"Erro no modelo local: {e}")
         return "Erro", 0.0, "Ocorreu um erro ao usar o modelo local."
-# <<< FIM DA MELHORIA DO GPT >>>
 
 
 # --- Rotas da Aplicação Flask ---
 
+# ### INCREMENTO: VERIFICAÇÃO DE CHAVES DE AMBIENTE ###
+# A rota principal agora verifica se as chaves de API existem no ambiente do servidor
+# e passa essa informação para o template.
 @app.route("/", methods=["GET"])
 def index():
     """
     Rota principal (GET). 
-    Apenas renderiza o template 'index.html' (a interface do usuário).
+    Renderiza o template 'index.html', passando o status das chaves de API do ambiente.
     """
-    return render_template("index.html")
+    # os.getenv() busca uma variável de ambiente. Retorna None se não encontrar.
+    # A conversão para bool (!!os.getenv(...)) resulta em True se a chave existir e False se não.
+    gemini_key_exists = bool(os.getenv("GEMINI_API_KEY"))
+    openai_key_exists = bool(os.getenv("OPENAI_API_KEY"))
+    
+    print(f"Status da chave Gemini no ambiente: {gemini_key_exists}")
+    print(f"Status da chave OpenAI no ambiente: {openai_key_exists}")
+    
+    # Passa as variáveis booleanas para o template.
+    return render_template("index.html", 
+                           gemini_key_exists=gemini_key_exists, 
+                           openai_key_exists=openai_key_exists)
 
 
 @app.route("/process", methods=["POST"])
 def process():
     """
     Rota de processamento (POST). 
-    Recebe os dados do formulário (texto, modo, chave de API, arquivo)
-    e executa a classificação de acordo com o modo escolhido.
-    Esta função foi atualizada para corrigir bugs de UX.
+    Recebe os dados do formulário, executa a classificação e renderiza os resultados.
     """
     try:
         # 1. Coleta e Sanitiza os Dados do Formulário
@@ -385,106 +324,102 @@ def process():
         mode = request.form.get("mode", "local")
         api_key = request.form.get("api_key", "").strip()
         file = request.files.get("file")
+        user_name = request.form.get("user_name", "").strip()
+        
+        # ### INCREMENTO: VERIFICAÇÃO DE CHAVES DE AMBIENTE (RE-RENDERIZAÇÃO) ###
+        # É importante verificar o status das chaves aqui também, para que a informação
+        # seja passada de volta ao template em caso de erro ou sucesso.
+        gemini_key_exists = bool(os.getenv("GEMINI_API_KEY"))
+        openai_key_exists = bool(os.getenv("OPENAI_API_KEY"))
+        # Monta um dicionário com os dados a serem passados de volta para o template.
+        # Isso evita repetição de código nos retornos.
+        render_data = {
+            "selected_mode": mode,
+            "user_name": user_name,
+            "gemini_key_exists": gemini_key_exists,
+            "openai_key_exists": openai_key_exists
+        }
 
-        # Inicializa a variável de texto principal como None.
-        # Isso é parte da nova lógica de prioridade de entrada.
         text = None
         
-        # ### INÍCIO DA CORREÇÃO BUG 2: PRIORIDADE DO ARQUIVO ###
-        # A lógica agora prioriza o conteúdo de um arquivo enviado sobre o texto digitado.
-        # Isso evita que o usuário tenha que apagar o texto da caixa para analisar um arquivo.
-        
-        # Primeiro, verifica se um objeto 'file' foi enviado e se ele tem um nome de arquivo.
+        # Correção Bug 2: Prioridade do Arquivo
         if file and file.filename:
             filename = file.filename.lower()
-            
-            print(f"Arquivo '{filename}' recebido, processando...")
-            
-            # Se for um arquivo PDF, chama a função de extração de texto de PDF.
             if filename.endswith(".pdf"):
-                # Passa o arquivo como um stream de bytes em memória.
                 text = extract_text_from_pdf(io.BytesIO(file.read()))
-            
-            # Se for um arquivo de texto, lê seu conteúdo.
             elif filename.endswith(".txt"):
-                # Decodifica o conteúdo do arquivo como UTF-8, ignorando erros de codificação.
                 text = file.read().decode("utf-8", errors="ignore")
-
-        # Se, após a verificação do arquivo, a variável 'text' ainda estiver vazia ou None,
-        # então usamos o conteúdo da caixa de texto como a fonte de dados.
+        
         if not text:
             text = text_input
-        # ### FIM DA CORREÇÃO BUG 2 ###
 
         # 3. Validação do Texto Final
-        # Verifica se, após todas as lógicas, existe algum texto para analisar.
         if not text:
-            # ### INÍCIO DA CORREÇÃO BUG 1: PERSISTÊNCIA DA SELEÇÃO DO MODELO ###
-            # Ao renderizar a página com um erro, agora passamos a variável 'selected_mode'.
-            # Isso dirá ao template Jinja2 para manter a opção do dropdown que o usuário escolheu,
-            # melhorando a experiência do usuário.
-            return render_template("index.html", error="Nenhum texto ou arquivo válido foi enviado.", selected_mode=mode)
-            # ### FIM DA CORREÇÃO BUG 1 ###
+            render_data["error"] = "Nenhum texto ou arquivo válido foi enviado."
+            return render_template("index.html", **render_data)
 
         # 4. Execução da Classificação Baseada no Modo
         label, confidence, reply = "", 0.0, ""
 
         if mode == "local":
-            label, confidence, reply = classify_local(text)
+            label, confidence, reply = classify_local(text, user_name)
         
-        elif mode == "gemini":
-            # Usa a chave da interface ou busca na variável de ambiente.
-            key_to_use = api_key or os.getenv("GEMINI_API_KEY")
-            if not key_to_use:
-                return render_template("index.html", error="Chave de API do Gemini não fornecida na interface nem encontrada no ambiente.", selected_mode=mode)
-            label, confidence, reply = classify_with_gemini(text, key_to_use)
+        elif mode == "gemini" or mode == "openai":
+            reply_body = ""
+            key_to_use = api_key # Por padrão, usa a chave do formulário.
             
-        elif mode == "openai":
-            # Usa a chave da interface ou busca na variável de ambiente.
-            key_to_use = api_key or os.getenv("OPENAI_API_KEY")
-            if not key_to_use:
-                return render_template("index.html", error="Chave de API da OpenAI não fornecida na interface nem encontrada no ambiente.", selected_mode=mode)
-            label, confidence, reply = classify_with_openai(text, key_to_use)
+            if mode == "gemini":
+                # Se a chave de ambiente do Gemini existir, ela tem prioridade.
+                if gemini_key_exists:
+                    key_to_use = os.getenv("GEMINI_API_KEY")
+                # Se não existir nem no ambiente nem no formulário, retorna erro.
+                if not key_to_use:
+                    render_data["error"] = "Chave de API do Gemini não fornecida."
+                    return render_template("index.html", **render_data)
+                label, confidence, reply_body = classify_with_gemini(text, key_to_use)
+
+            else: # openai
+                # Se a chave de ambiente do OpenAI existir, ela tem prioridade.
+                if openai_key_exists:
+                    key_to_use = os.getenv("OPENAI_API_KEY")
+                # Se não existir nem no ambiente nem no formulário, retorna erro.
+                if not key_to_use:
+                    render_data["error"] = "Chave de API da OpenAI não fornecida."
+                    return render_template("index.html", **render_data)
+                label, confidence, reply_body = classify_with_openai(text, key_to_use)
             
+            # Adiciona a assinatura dinâmica à resposta vinda da API
+            if label != "Erro":
+                signature = f"\n\nAtenciosamente,\n{user_name}" if user_name else "\n\nAtenciosamente,\n[Seu Nome]"
+                reply = reply_body + signature
+            else:
+                reply = reply_body # Em caso de erro, a resposta já é a mensagem de erro.
         else:
-            # Tratamento para modo inválido (segurança).
-            return render_template("index.html", error="Modo de operação inválido selecionado.", selected_mode=mode)
+            render_data["error"] = "Modo de operação inválido."
+            return render_template("index.html", **render_data)
 
         # 5. Tratamento de Erros de Classificação
         if label == "Erro":
-            # Retorna o erro específico da função de classificação, também persistindo o modo.
-            return render_template("index.html", error=reply, original_text=text, selected_mode=mode)
+            render_data["error"] = reply
+            render_data["original_text"] = text
+            return render_template("index.html", **render_data)
 
         # 6. Renderização de Resultados
-        # ### INÍCIO DA CORREÇÃO BUG 1 (CASO DE SUCESSO) ###
-        # No retorno de sucesso, também passamos 'selected_mode=mode' para o template.
-        # Isso garante que após uma análise bem-sucedida, o dropdown permaneça
-        # na última opção utilizada pelo usuário.
-        return render_template("index.html",
-                               original_text=text,
-                               result_label=label,
-                               confidence=confidence,
-                               suggested_reply=reply,
-                               selected_mode=mode)
-        # ### FIM DA CORREÇÃO BUG 1 ###
+        # Adiciona os resultados ao dicionário de dados e renderiza o template.
+        render_data.update({
+            "original_text": text,
+            "result_label": label,
+            "confidence": confidence,
+            "suggested_reply": reply,
+        })
+        return render_template("index.html", **render_data)
 
     except Exception as e:
-        # Tratamento de erro geral para qualquer falha não esperada na rota.
         print(f"Erro geral na rota /process: {e}")
-        traceback.print_exc() # Imprime o stack trace para o console para debug.
-        return render_template("index.html", error="Ocorreu um erro inesperado no servidor. Verifique o console para mais detalhes.")
+        traceback.print_exc()
+        return render_template("index.html", error="Ocorreu um erro inesperado no servidor.")
 
 
 # --- Execução da Aplicação ---
 if __name__ == "__main__":
-    # Garante que o servidor Flask seja executado apenas quando o script for chamado diretamente.
-    # O comando `flask run` também pode ser usado se as variáveis de ambiente estiverem configuradas.
-    
-    # debug=True: Ativa o modo de depuração.
-    # Isso permite recarregamento automático do servidor quando o código é alterado
-    # e exibe um console de depuração interativo no navegador em caso de erro.
-    # NUNCA use debug=True em um ambiente de produção real.
-    
-    # port=5000: Define a porta de execução padrão para o servidor de desenvolvimento.
-    # O Render ignora esta configuração e usa a porta que ele designa.
     app.run(debug=True, port=5000)
