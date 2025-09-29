@@ -1,125 +1,134 @@
-# train_model_improved.py
 # -*- coding: utf-8 -*-
 """
 Script para Treinamento e Avaliação do Modelo de Classificação de E-mails.
 
-Este script utiliza um pipeline de Machine Learning (TF-IDF + Regressão Logística Calibrada)
-para classificar e-mails em 'Produtivo' (requer ação) ou 'Improdutivo' (não requer ação).
-O modelo final é salvo em 'models/email_classifier.joblib' para ser usado na aplicação Flask (app.py).
+Este script executa um pipeline de Machine Learning completo:
+1.  Lê os dados de 'data/emails.csv'.
+2.  Pré-processa o texto (limpeza, TF-IDF).
+3.  Treina um modelo de Regressão Logística Calibrada.
+4.  Avalia a performance do modelo.
+5.  Salva o modelo treinado em 'models/email_classifier.joblib' para uso pela aplicação Flask.
+
+Foi projetado para ser executado de forma robusta em ambientes de build automatizado como o Render.
 """
 
 # --- Importações de Bibliotecas ---
 import os
-import joblib           # Para salvar e carregar o modelo treinado (serialização).
-import re               # Para expressões regulares (mantido, mas não essencial neste script).
-import pandas as pd     # Para manipulação de dados e leitura do arquivo CSV.
-import numpy as np      # Para operações numéricas (boa prática em ML).
-
-# Importações NLTK (Natural Language Toolkit) para pré-processamento de texto.
+import joblib
+import pandas as pd
 import nltk
 from nltk.corpus import stopwords
-
-# Importações Scikit-learn para construção do pipeline de ML.
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, roc_auc_score
-from sklearn.calibration import CalibratedClassifierCV # Para calibrar as probabilidades do modelo.
+from sklearn.calibration import CalibratedClassifierCV
 
-# --- Configurações Iniciais e Preparação de Dados ---
+def train_and_save_model():
+    """
+    Função principal que encapsula todo o processo de treinamento e salvamento do modelo.
 
-# Cria o diretório 'models' se ele não existir, para salvar o modelo treinado.
-os.makedirs("models", exist_ok=True)
+    Returns:
+        bool: True se o treinamento e salvamento foram bem-sucedidos, False caso contrário.
+    """
+    print("--- Iniciando processo de treinamento do modelo ---")
 
-# Baixa os recursos de 'stopwords' do NLTK. 'quiet=True' evita mensagens de console se já estiver baixado.
-# Esta linha é crucial para que o vetorizador funcione corretamente.
-nltk.download('stopwords', quiet=True)
-# Define a lista de stopwords em português a ser usada no pré-processamento.
-stop_pt = stopwords.words("portuguese")
+    # --- 1. Configurações Iniciais e Preparação de Dados ---
+    try:
+        print("Criando diretório 'models' se necessário...")
+        os.makedirs("models", exist_ok=True)
+        
+        print("Baixando recursos do NLTK (stopwords)...")
+        nltk.download('stopwords', quiet=True)
+        stop_pt = stopwords.words("portuguese")
 
-# Define o caminho para o arquivo de dados (e-mails).
-DATA_PATH = os.path.join("data", "emails.csv") 
-# Carrega o dataset de e-mails usando Pandas.
-df = pd.read_csv(DATA_PATH)
+        DATA_PATH = os.path.join("data", "emails.csv")
+        print(f"Lendo o arquivo de dados de '{DATA_PATH}'...")
+        df = pd.read_csv(DATA_PATH)
+        
+    except FileNotFoundError:
+        print(f"\nERRO CRÍTICO: O arquivo de dados '{DATA_PATH}' não foi encontrado.")
+        print("Verifique se o arquivo está no local correto e foi commitado no Git.")
+        return False
+    except Exception as e:
+        print(f"\nERRO CRÍTICO inesperado durante a configuração: {e}")
+        return False
 
-# Trata valores ausentes (NaN) na coluna 'text', substituindo-os por string vazia.
-df['text'] = df['text'].fillna("")
-
-# Mapeia os rótulos de string para binários (0 e 1): 'Produtivo' -> 1, 'Improdutivo' -> 0.
-df['label_bin'] = df['label'].map({'Produtivo': 1, 'Improdutivo': 0})
-
-# Remove quaisquer linhas que não puderam ser mapeadas (garante que X e Y sejam válidos).
-df = df.dropna(subset=['label_bin'])
-
-# Define as features (X) como o texto do e-mail e o target (y) como o rótulo binário.
-X = df['text'].astype(str)
-y = df['label_bin'].astype(int)
-
-# --- Divisão dos Dados (Split) ---
-
-# Divide os dados em conjuntos de treino e teste (85% treino, 15% teste).
-# 'stratify=y' garante que a proporção das classes (Produtivo/Improdutivo) seja mantida em ambos os conjuntos.
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.15, random_state=42, stratify=y
-)
-
-# --- Construção do Pipeline de Machine Learning ---
-
-# 1. Vetorizador (TF-IDF - Term Frequency-Inverse Document Frequency)
-vec = TfidfVectorizer(
-    ngram_range=(1,2),      # Inclui unigramas e bigramas (palavras e pares de palavras).
-    max_features=10000,     # Limita o vocabulário às 10000 palavras/bigramas mais frequentes.
-    lowercase=True,         # Converte todo o texto para minúsculas.
-    stop_words=stop_pt,     # Remove as stopwords em português.
-    token_pattern=r'\b[^\d\W]+\b'  # Padrão de tokenização: ignora tokens que são apenas números.
-)
-
-# 2. Classificador Base (Regressão Logística)
-base_clf = LogisticRegression(
-    max_iter=2000,           # Aumenta o número máximo de iterações para garantir convergência.
-    class_weight="balanced", # Pesa as amostras para lidar com possíveis desequilíbrios de classe.
-    solver="liblinear"       # Algoritmo de otimização eficiente.
-)
-
-# 3. Calibrador de Probabilidade
-# Envolve o classificador base para garantir que as saídas 'predict_proba' sejam probabilidades reais.
-calibrated = CalibratedClassifierCV(base_estimator=base_clf, cv=5, method='sigmoid')
-
-# 4. Pipeline Completo
-# Junta o vetorizador e o classificador calibrado em uma única sequência de processamento.
-pipeline = Pipeline([
-    ("tfidf", vec),
-    ("clf", calibrated)
-])
-
-# --- Treinamento e Avaliação ---
-
-print("Treinando modelo (pode demorar dependendo do tamanho dos dados)...")
-# Treina o pipeline usando os dados de treino.
-pipeline.fit(X_train, y_train)
-
-# Faz previsões (rótulos binários) e extrai as probabilidades da classe positiva (Produtivo).
-pred = pipeline.predict(X_test)
-proba = pipeline.predict_proba(X_test)[:, 1]  # Probabilidade da classe 'Produtivo' (índice 1).
-
-# Imprime o relatório detalhado de classificação.
-print("\nRelatório de classificação:")
-print(classification_report(y_test, pred, target_names=["Improdutivo", "Produtivo"]))
-print("Acurácia:", accuracy_score(y_test, pred))
-
-# Tenta calcular o ROC AUC, uma métrica importante para modelos binários.
-try:
-    print("ROC AUC:", roc_auc_score(y_test, proba))
-except Exception:
-    # Se o cálculo falhar (e.g., apenas uma classe presente no teste), ignora.
-    pass
+    print("Pré-processando os dados...")
+    df['text'] = df['text'].fillna("")
+    df['label_bin'] = df['label'].map({'Produtivo': 1, 'Improdutivo': 0})
+    df = df.dropna(subset=['label_bin'])
     
-# Imprime a Matriz de Confusão para visualizar erros e acertos.
-print("Matriz de confusão:\n", confusion_matrix(y_test, pred))
+    if len(df) < 20:
+        print(f"\nAVISO: O dataset possui apenas {len(df)} amostras. "
+              "Isso é muito pouco para um treinamento significativo e pode causar erros.")
+        return False
+        
+    X = df['text'].astype(str)
+    y = df['label_bin'].astype(int)
 
-# --- Salvar o Modelo ---
+    print("Dividindo os dados em conjuntos de treino e teste...")
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.15, random_state=42, stratify=y
+    )
+    
+    # --- 2. Construção do Pipeline de Machine Learning ---
+    print("Construindo o pipeline do modelo...")
+    vec = TfidfVectorizer(
+        ngram_range=(1, 2), max_features=10000, lowercase=True,
+        stop_words=stop_pt, token_pattern=r'\b[^\d\W]+\b'
+    )
+    base_clf = LogisticRegression(
+        max_iter=2000, class_weight="balanced", solver="liblinear"
+    )
+    # Usando cv=3 para ser um pouco mais rápido no build do Render
+    calibrated = CalibratedClassifierCV(base_estimator=base_clf, cv=3, method='sigmoid')
+    
+    pipeline = Pipeline([
+        ("tfidf", vec), 
+        ("clf", calibrated)
+    ])
+    
+    # --- 3. Treinamento e Avaliação ---
+    print("Treinando o modelo... (Isso pode levar alguns instantes)")
+    pipeline.fit(X_train, y_train)
+    
+    print("\n--- Avaliação do Modelo (usando amostra de teste) ---")
+    pred = pipeline.predict(X_test)
+    proba = pipeline.predict_proba(X_test)[:, 1]
 
-# Salva o pipeline treinado (incluindo vetorizador e classificador) em um arquivo para uso posterior no Flask.
-joblib.dump(pipeline, "models/email_classifier.joblib")
-print("\nModelo salvo em models/email_classifier.joblib")
+    print("\nRelatório de Classificação:")
+    print(classification_report(y_test, pred, target_names=["Improdutivo", "Produtivo"]))
+    
+    print(f"Acurácia: {accuracy_score(y_test, pred):.4f}")
+    
+    # O cálculo de ROC AUC pode falhar se o conjunto de teste for muito pequeno ou tiver apenas uma classe
+    try:
+        print(f"ROC AUC: {roc_auc_score(y_test, proba):.4f}")
+    except ValueError:
+        print("ROC AUC: Não pôde ser calculado (provavelmente apenas uma classe na amostra de teste).")
+        
+    print("\nMatriz de Confusão:")
+    print(confusion_matrix(y_test, pred))
+    
+    # --- 4. Salvar o Modelo ---
+    model_path = "models/email_classifier.joblib"
+    print(f"\nSalvando o modelo treinado em '{model_path}'...")
+    joblib.dump(pipeline, model_path)
+    
+    print(f"✅ Modelo salvo com sucesso!")
+    return True
+
+# --- Bloco de Execução Principal ---
+# Este bloco só será executado quando o script for chamado diretamente
+# (ex: `python train_model.py`)
+if __name__ == "__main__":
+    success = train_and_save_model()
+    
+    if success:
+        print("\nProcesso de treinamento concluído com sucesso.")
+    else:
+        print("\nO processo de treinamento falhou. Verifique os erros acima.")
+        # Sai com um código de erro, o que pode ajudar a falhar o build do Render explicitamente
+        exit(1)
