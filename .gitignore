@@ -1,5 +1,54 @@
+# Arquivos/dirs locais
 venv/
-__pycache__/
-*.pyc
 .env
 .DS_Store
+
+# Compilados Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build / distribuição
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+wheels/
+share/python-wheels/
+MANIFEST
+
+# Logs / coverage / testes
+htmlcov/
+.tox/
+.nox/
+.coverage*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.pycover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Ambientes virtuais alternativos
+.venv
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+.spyderproject
+.spyproject
+.ropeproject
+
+# Outros
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
