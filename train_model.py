@@ -83,7 +83,8 @@ def train_and_save_model():
         max_iter=2000, class_weight="balanced", solver="liblinear"
     )
     # Usando cv=3 para ser um pouco mais rápido no build do Render
-    calibrated = CalibratedClassifierCV(base_estimator=base_clf, cv=3, method='sigmoid')
+    # Linha corrigida
+    calibrated = CalibratedClassifierCV(estimator=base_clf, cv=3, method='sigmoid')
     
     pipeline = Pipeline([
         ("tfidf", vec), 
