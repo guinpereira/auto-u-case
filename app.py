@@ -196,9 +196,9 @@ def classify_with_gemini(text, api_key):
         # Configura a chave de API para a sessão.
         genai.configure(api_key=api_key)
 
-        # Inicializa o modelo Gemini (gemini-2.5-flash) com baixa temperatura para respostas mais determinísticas.
+        # Inicializa o modelo Gemini (gemini-1.5-flash) com baixa temperatura para respostas mais determinísticas.
         model_gemini = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+            model_name="gemini-1.5-flash",
             generation_config={"temperature": 0}
         )
 
@@ -250,6 +250,8 @@ def classify_with_openai(text, api_key):
 
     try:
         # Configura a chave de API.
+        # NOTA: O SDK mais recente da OpenAI pode usar `client = OpenAI(api_key=api_key)`
+        # mas esta versão ainda usa a atribuição direta.
         openai.api_key = api_key
 
         # Prompt de engenharia: Semelhante ao Gemini, define o papel e a estrutura JSON.
@@ -290,6 +292,7 @@ def classify_local(text):
     - Threshold ajustado para >=0.6 (Produtivo).
     - Zona de incerteza entre 0.5–0.6 com aviso.
     - Reforço para termos acadêmicos e anexos.
+    - **INCREMENTO:** A lógica de confiança agora reflete a probabilidade da classe predita.
     """
     if model is None:
         # Verifica se o modelo foi carregado com sucesso na inicialização.
@@ -310,22 +313,27 @@ def classify_local(text):
         if any(k in text.lower() for k in ["anexo", "slides", "professor", "disciplina", "currículo", "documento"]):
             proba_prod = max(proba_prod, 0.8)
 
+        # --- LÓGICA DE DECISÃO E CONFIANÇA CORRIGIDA ---
         # Aplica os Thresholds (Limiares) de Decisão.
         if proba_prod >= 0.6:
             # Alta confiança em Produtivo.
             label = "Produtivo"
+            # A confiança a ser exibida é a probabilidade da classe 'Produtivo'.
             confidence = proba_prod
-        elif proba_prod >= 0.5:
-            # Zona de Incerteza (entre 50% e 60%): assume Improdutivo por precaução, mas avisa.
-            label = "Improdutivo"
-            confidence = proba_prod
-            print("Aviso: classificação incerta (zona 0.5–0.6), revisão humana sugerida.")
+        # Se a probabilidade de ser 'Produtivo' for menor que 0.6...
         else:
-            # Baixa confiança em Produtivo (assume Improdutivo).
+            # A classificação final é 'Improdutivo'.
             label = "Improdutivo"
-            confidence = proba_prod
+            # A confiança a ser exibida é a probabilidade da classe 'Improdutivo',
+            # que é calculada como 1 menos a probabilidade de ser 'Produtivo'.
+            confidence = 1 - proba_prod
             
-        # Gera a resposta automática usando a função auxiliar.
+            # Condição para a Zona de Incerteza (entre 50% e 60%):
+            # A lógica de decisão já classifica como 'Improdutivo', aqui apenas adicionamos o aviso.
+            if proba_prod >= 0.5:
+                print("Aviso: classificação incerta (zona 0.5–0.6), revisão humana sugerida.")
+        
+        # Gera a resposta automática usando a função auxiliar com o rótulo já definido.
         reply = template_reply(label, text)
         return label, confidence, reply
         
