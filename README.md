@@ -7,7 +7,7 @@ Aplicação web em **Python + Flask** que:
 
 ## 🖥️ Demonstração
 - **Aplicação hospedada:** [https://auto-u-case.onrender.com](https://auto-u-case.onrender.com)  
-- **Vídeo de apresentação:** `https://youtu.be/BjhwxLOMIz8`
+- **Vídeo de apresentação:** [https://youtu.be/BjhwxLOMIz8](https://youtu.be/BjhwxLOMIz8)
 
 
 
