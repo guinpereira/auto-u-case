@@ -92,13 +92,11 @@ Usar somente variáveis de ambiente para armazenar credenciais.
 
 Multi-classe: permitir novas categorias (ex.: Financeiro, Suporte, Comercial).
 
-Fine-tuning com Transformers
-
 Analisar outros modelos como BERT, DistilBERT ou similares em relação à compreensão semântica.
 
 Feedback Loop
 
-Usuários poderiam corrigir classificações e alimentar o modelo para treino contínuo.
+usuários poderiam corrigir classificações e alimentar o modelo para treino contínuo.
 
 Fila assíncrona
 
